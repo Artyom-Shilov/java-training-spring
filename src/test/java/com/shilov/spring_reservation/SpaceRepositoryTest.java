@@ -5,6 +5,7 @@ import com.shilov.spring_reservation.common.enums.SpaceType;
 import com.shilov.spring_reservation.common.exceptions.RepositoryException;
 import com.shilov.spring_reservation.models.Space;
 import com.shilov.spring_reservation.repository.SpaceRepository;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,12 +23,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SpaceRepositoryTest {
 
-    private SpaceRepository spaceRepository;
+    private static SpaceRepository spaceRepository;
+
+    @BeforeAll
+    static void init() {
+        ApplicationContext context = new AnnotationConfigApplicationContext(SpringConfig.class);
+        spaceRepository = context.getBean(SpaceRepository.class);
+    }
 
     @BeforeEach
     void setUp() throws RepositoryException {
-        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig.class);
-        spaceRepository = applicationContext.getBean(SpaceRepository.class);
         spaceRepository.deleteAllSpaces();
     }
 
