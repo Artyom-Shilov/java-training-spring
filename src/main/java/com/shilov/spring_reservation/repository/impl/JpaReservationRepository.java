@@ -9,7 +9,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.security.cert.Extension;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,42 +39,21 @@ public class JpaReservationRepository implements ReservationRepository {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Long addReservation(Reservation reservation) throws RepositoryException {
-        EntityTransaction transaction = null;
-        try {
-            transaction = em.getTransaction();
-            transaction.begin();
             em.persist(reservation);
-            transaction.commit();
             return reservation.getId();
-        } catch (Exception e) {
-            if(transaction != null) {
-                transaction.rollback();
-            }
-            throw new RepositoryException(e);
-        }
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateReservation(Long id, Reservation newData) throws RepositoryException {
-        EntityTransaction transaction = null;
-        try {
-            transaction = em.getTransaction();
-            transaction.begin();
-            Reservation reservation = em.find(Reservation.class, id);
-            if (reservation != null) {
-                newData.setId(id);
-                em.merge(newData);
-                transaction.commit();
-            } else {
-                transaction.rollback();
-                throw new RepositoryException("Reservation not found");
-            }
-        } catch (Exception e) {
-            if(transaction != null) {
-                transaction.rollback();
-            }
-            throw new RepositoryException(e);
+        Reservation reservation = em.find(Reservation.class, id);
+        if (reservation != null) {
+            newData.setId(id);
+            em.merge(newData);
+        } else {
+            throw new RepositoryException("Reservation not found");
         }
     }
 
