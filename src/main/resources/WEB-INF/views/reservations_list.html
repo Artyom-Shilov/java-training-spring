@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Space Reservation</title>
+</head>
+<body>
+<table>
+    <thead>
+    <tr>
+        <th> ReservationId </th>
+        <th> ReservedSpaceId </th>
+        <th> Customer </th>
+        <th> Date </th>
+        <th> StartTime </th>
+        <th> EndTime </th>
+        <th> Status </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:if="${reservations.empty}">
+        <td colspan="7"> No Reservations Available </td>
+    </tr>
+    <tr th:each="reservation : ${reservations}">
+        <td><span th:text="${reservation.id}"> ReservationId </span></td>
+        <td><span th:text="${reservation.customer.login}"> ReservedSpaceId </span></td>
+        <td><span th:text="${reservation.space.id}"> Customer </span></td>
+        <td><span th:text="${reservation.reservationDateTime.date}"> Date </span></td>
+        <td><span th:text="${reservation.reservationDateTime.startTime}"> StartTime </span></td>
+        <td><span th:text="${reservation.reservationDateTime.endTime}"> EndTime </span></td>
+        <td><span th:text="${reservation.status}"> End time </span></td>
+    </tr>
+    </tbody>
+</table>
+<p th:if="${error}" th:text="${error}" style="color: red;"></p>
+</body>
+</html>

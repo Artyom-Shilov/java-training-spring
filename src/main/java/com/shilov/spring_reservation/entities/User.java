@@ -1,4 +1,4 @@
-package com.shilov.spring_reservation.models;
+package com.shilov.spring_reservation.entities;
 
 import com.shilov.spring_reservation.common.enums.UserRole;
 import jakarta.persistence.*;

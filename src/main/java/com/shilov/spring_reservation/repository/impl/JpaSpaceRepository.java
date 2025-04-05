@@ -1,12 +1,11 @@
 package com.shilov.spring_reservation.repository.impl;
 
 import com.shilov.spring_reservation.common.exceptions.RepositoryException;
-import com.shilov.spring_reservation.models.Space;
+import com.shilov.spring_reservation.entities.Space;
 import com.shilov.spring_reservation.repository.SpaceRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,14 +28,12 @@ public class JpaSpaceRepository implements SpaceRepository {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Long addSpace(Space space) {
         em.persist(space);
         return space.getId();
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void deleteSpace(Long id) throws RepositoryException {
         Space space = em.find(Space.class, id);
         if (space != null) {
@@ -47,7 +44,6 @@ public class JpaSpaceRepository implements SpaceRepository {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateSpace(Long id, Space newData) throws RepositoryException {
         Space space = em.find(Space.class, id);
         if (space != null) {
@@ -59,7 +55,6 @@ public class JpaSpaceRepository implements SpaceRepository {
 }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void deleteAllSpaces() {
         em.createQuery("DELETE FROM Space").executeUpdate();
     }

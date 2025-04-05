@@ -1,18 +1,15 @@
 package com.shilov.spring_reservation;
 
-import com.shilov.spring_reservation.common.config.SpringConfig;
 import com.shilov.spring_reservation.common.enums.SpaceType;
 import com.shilov.spring_reservation.common.exceptions.RepositoryException;
-import com.shilov.spring_reservation.models.Space;
+import com.shilov.spring_reservation.entities.Space;
 import com.shilov.spring_reservation.repository.SpaceRepository;
-import org.junit.jupiter.api.BeforeAll;
+import com.shilov.spring_reservation.repository.impl.JpaSpaceRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,16 +20,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SpaceRepositoryTest {
 
-    private static SpaceRepository spaceRepository;
-
-    @BeforeAll
-    static void init() {
-        ApplicationContext context = new AnnotationConfigApplicationContext(SpringConfig.class);
-        spaceRepository = context.getBean(SpaceRepository.class);
-    }
+    private SpaceRepository spaceRepository;
 
     @BeforeEach
     void setUp() throws RepositoryException {
+        spaceRepository = new JpaSpaceRepository();
         spaceRepository.deleteAllSpaces();
     }
 

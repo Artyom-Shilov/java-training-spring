@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Space Reservation</title>
+</head>
+<body>
+<p>Customer menu</p>
+<ul>
+    <li><a th:href="@{/space/available/selection}">Browse available spaces</a></li>
+    <li><a th:href="@{/reservation/creation}">Make a reservation</a></li>
+    <li><a th:href="@{/reservation/mine}">View my reservations</a></li>
+    <li><a th:href="@{/reservation/cancel}">Cancel reservation</a></li>
+</ul>
+</body>
+</html>

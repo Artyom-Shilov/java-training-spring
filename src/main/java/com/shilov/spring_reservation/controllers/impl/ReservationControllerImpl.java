@@ -1,24 +1,26 @@
 package com.shilov.spring_reservation.controllers.impl;
 
-import com.shilov.spring_reservation.common.enums.ResponseStatus;
-import com.shilov.spring_reservation.common.exceptions.ReservationDateTimeFormatException;
 import com.shilov.spring_reservation.common.exceptions.ServiceException;
-import com.shilov.spring_reservation.controllers.ReservationController;
-import com.shilov.spring_reservation.controllers.requests.MakeCurrentUserReservationRequest;
-import com.shilov.spring_reservation.controllers.requests.ReservationDateTimeInput;
-import com.shilov.spring_reservation.controllers.responses.Response;
-import com.shilov.spring_reservation.models.Reservation;
-import com.shilov.spring_reservation.models.ReservationDateTime;
+import com.shilov.spring_reservation.entities.Reservation;
+import com.shilov.spring_reservation.entities.ReservationDateTime;
+import com.shilov.spring_reservation.models.IdInput;
+import com.shilov.spring_reservation.models.ReservationInput;
 import com.shilov.spring_reservation.services.ReservationService;
 import com.shilov.spring_reservation.services.AuthService;
 import com.shilov.spring_reservation.services.SpaceService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
 @Controller
-public class ReservationControllerImpl implements ReservationController {
+public class ReservationControllerImpl {
 
     private final ReservationService reservationService;
     private final SpaceService spaceService;
@@ -32,75 +34,71 @@ public class ReservationControllerImpl implements ReservationController {
         this.authService = authService;
     }
 
-    public Response getAllReservations() {
-        StringBuilder output = new StringBuilder();
-        List<Reservation> allReservations;
-        Response response;
+    @GetMapping("reservation/all")
+    public String getAllReservations(Model model) throws ServiceException {
+        List<Reservation> allReservations = reservationService.getAllReservations();
+        model.addAttribute("reservations", allReservations);
+        return "reservations_list";
+    }
+
+    @GetMapping("reservation/creation")
+    public String showReservationCreationForm(Model model) {
+        model.addAttribute(new ReservationInput());
+        return "reservation_creation_form";
+    }
+
+    @PostMapping("reservation")
+    public String makeReservation(@Valid @ModelAttribute ReservationInput reservationInput,
+                                  BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            return "reservation_creation_form";
+        }
         try {
-            allReservations = reservationService.getAllReservations();
-            for (int i = 0; i < allReservations.size(); i++) {
-                output.append(i + 1).append(": ").append(allReservations.get(i)).append("\n");
+            ReservationDateTime reservationDateTime = new ReservationDateTime(
+                    reservationInput.getDate(),
+                    reservationInput.getStartTime(),
+                    reservationInput.getEndTime());
+            Long spaceId = reservationInput.getSpaceId();
+            if (!spaceService.checkSpaceReservationAvailability(spaceId, reservationDateTime)) {
+                model.addAttribute("error", "Space not available for reservation");
+                return "reservation_creation_form";
             }
-            if (output.isEmpty()) {
-                String noReservationsMessage = "System does not have any reservations";
-                output.append(noReservationsMessage);
-            }
-            response = new Response(ResponseStatus.SUCCESS, output.toString());
+            Long reservationId = reservationService.makeReservation(spaceService.getSpaceById(spaceId),
+                    authService.getCurrentUser(), reservationDateTime);
+            model.addAttribute("successMessage", "Reservation has been created with id : " + reservationId);
         } catch (ServiceException e) {
-            response = new Response(ResponseStatus.FAILURE, e.getMessage());
+            model.addAttribute("error", "Error during reservation process");
         }
-        return response;
+        return "reservation_creation_form";
     }
 
-    public Response makeCurrentUserReservation(MakeCurrentUserReservationRequest request) {
-        Response response;
-        String successMessage = "Reservation was successfully made";
-        ReservationDateTimeInput dateTimeInput = request.getReservationDateTimeInput();
-        try {
-            reservationService.makeReservation(
-                    spaceService.getSpaceById(request.getSpaceId()),
-                    authService.getCurrentUser(),
-                    new ReservationDateTime(dateTimeInput.getDate(), dateTimeInput.getStartTime(),
-                            dateTimeInput.getEndTime())
-            );
-            response = new Response(ResponseStatus.SUCCESS, successMessage);
-        } catch (ServiceException | ReservationDateTimeFormatException e) {
-            response = new Response(ResponseStatus.FAILURE, e.getMessage());
-        }
-        return response;
+    @GetMapping("reservation/mine")
+    public String getMyReservations(Model model) throws ServiceException {
+        List<Reservation> userReservations = reservationService.getUserReservations(authService.getCurrentUser());
+        model.addAttribute("reservations", userReservations);
+        return "reservations_list";
     }
 
-    public Response getCurrentUserReservations() {
-        Response response;
-        StringBuilder output = new StringBuilder();
-        List<Reservation> currentUserReservations;
-        try {
-            currentUserReservations = reservationService.getUserReservations(authService.getCurrentUser());
-            for (int i = 0; i < currentUserReservations.size(); i++) {
-                output.append(i + 1).append(": ").append(currentUserReservations.get(i)).append("\n");
-            }
-            if (output.isEmpty()) {
-                String noReservationMessage = "User does not have any reservations";
-                output.append(noReservationMessage);
-            }
-            response = new Response(ResponseStatus.SUCCESS, output.toString());
-        } catch (ServiceException e) {
-            response = new Response(ResponseStatus.FAILURE, e.getMessage());
-        }
-        return response;
+    @GetMapping("reservation/cancel")
+    public String showCancelReservationForm(Model model) {
+        model.addAttribute(new IdInput());
+        return "reservation_cancel_form";
     }
 
-    public Response cancelReservation(String reservationId) {
-        String successMessage = "Reservation was successfully cancelled";
-        Response response;
+    @PostMapping("reservation/cancel")
+    public String cancelReservation(@Valid @ModelAttribute IdInput idInput,
+                                    BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            return "reservation_cancel_form";
+        }
         try {
             reservationService.cancelReservation(
-                    reservationService.getReservationById(reservationId),
+                    idInput.getId(),
                     authService.getCurrentUser());
-            response = new Response(ResponseStatus.SUCCESS, successMessage);
+            model.addAttribute("successMessage", "Reservation was cancelled");
         } catch (ServiceException e) {
-            response = new Response(ResponseStatus.FAILURE, e.getMessage());
+            model.addAttribute("error", "Error during reservation cancel process");
         }
-        return response;
+        return "reservation_cancel_form";
     }
 }

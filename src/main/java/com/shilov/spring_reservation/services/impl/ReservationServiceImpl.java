@@ -4,15 +4,16 @@ import com.shilov.spring_reservation.common.enums.ReservationStatus;
 import com.shilov.spring_reservation.common.enums.UserRole;
 import com.shilov.spring_reservation.common.exceptions.RepositoryException;
 import com.shilov.spring_reservation.common.exceptions.ServiceException;
-import com.shilov.spring_reservation.models.Reservation;
-import com.shilov.spring_reservation.models.ReservationDateTime;
-import com.shilov.spring_reservation.models.Space;
-import com.shilov.spring_reservation.models.User;
-import com.shilov.spring_reservation.models.builders.ReservationBuilder;
+import com.shilov.spring_reservation.entities.Reservation;
+import com.shilov.spring_reservation.entities.ReservationDateTime;
+import com.shilov.spring_reservation.entities.Space;
+import com.shilov.spring_reservation.entities.User;
+import com.shilov.spring_reservation.entities.builders.ReservationBuilder;
 import com.shilov.spring_reservation.repository.ReservationRepository;
 import com.shilov.spring_reservation.services.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,29 +30,33 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public void cancelReservation(Reservation reservation, User user) throws ServiceException {
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelReservation(Long reservationId, User user) throws ServiceException {
+        Reservation reservation = getReservationById(reservationId);
         validateUserForReservationCancel(user, reservation);
         reservation.setStatus(ReservationStatus.CANCELLED);
         try {
-            reservationRepository.updateReservation(reservation.getId(), reservation);
+            reservationRepository.updateReservation(reservationId, reservation);
         } catch (RepositoryException e) {
             throw new ServiceException(e);
         }
     }
 
     public void validateUserForReservationCancel(User user, Reservation reservation) throws ServiceException {
-        if (user.getRole() != UserRole.ADMIN || user.equals(reservation.getCustomer())) {
-            throw new ServiceException("User does have rights to cancel the reservation");
+        if (user.getRole() == UserRole.ADMIN || user.equals(reservation.getCustomer())) {
+            return;
         }
+        throw new ServiceException("User does have rights to cancel the reservation");
     }
 
     @Override
-    public void makeReservation(Space space, User customer, ReservationDateTime reservationDateTime) throws ServiceException {
+    @Transactional(rollbackFor = Exception.class)
+    public Long makeReservation(Space space, User customer, ReservationDateTime reservationDateTime) throws ServiceException {
         Reservation newReservation = reservationBuilder.setSpace(space).setCustomer(customer)
                 .setReservationDateTime(reservationDateTime).setStatus(ReservationStatus.ACTIVE).createReservation();
         validateNewReservationTime(newReservation);
         try {
-            reservationRepository.addReservation(newReservation);
+           return reservationRepository.addReservation(newReservation);
         } catch (RepositoryException e) {
             throw new ServiceException(e);
         }
@@ -90,20 +95,12 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public Reservation getReservationById(String reservationId) throws ServiceException {
+    public Reservation getReservationById(Long reservationId) throws ServiceException {
         try {
-            return reservationRepository.getReservationById(parseReservationId(reservationId))
+            return reservationRepository.getReservationById(reservationId)
                     .orElseThrow(() -> new ServiceException("Reservation not found"));
         } catch (RepositoryException e) {
             throw new ServiceException(e);
-        }
-    }
-
-    private Long parseReservationId(String id) throws ServiceException {
-        try {
-            return Long.parseLong(id);
-        } catch (NumberFormatException e) {
-            throw new ServiceException("Invalid reservation id format");
         }
     }
 }

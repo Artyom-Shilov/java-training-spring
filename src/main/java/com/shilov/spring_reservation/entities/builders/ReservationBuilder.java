@@ -1,10 +1,10 @@
-package com.shilov.spring_reservation.models.builders;
+package com.shilov.spring_reservation.entities.builders;
 
 import com.shilov.spring_reservation.common.enums.ReservationStatus;
-import com.shilov.spring_reservation.models.Reservation;
-import com.shilov.spring_reservation.models.ReservationDateTime;
-import com.shilov.spring_reservation.models.Space;
-import com.shilov.spring_reservation.models.User;
+import com.shilov.spring_reservation.entities.Reservation;
+import com.shilov.spring_reservation.entities.ReservationDateTime;
+import com.shilov.spring_reservation.entities.Space;
+import com.shilov.spring_reservation.entities.User;
 
 public class ReservationBuilder {
     private User customer;

@@ -1,6 +1,6 @@
 package com.shilov.spring_reservation.repository.impl;
 
-import com.shilov.spring_reservation.models.User;
+import com.shilov.spring_reservation.entities.User;
 import com.shilov.spring_reservation.repository.GlobalUserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;

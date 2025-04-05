@@ -2,7 +2,7 @@ package com.shilov.spring_reservation.services;
 
 import com.shilov.spring_reservation.common.enums.UserRole;
 import com.shilov.spring_reservation.common.exceptions.ServiceException;
-import com.shilov.spring_reservation.models.User;
+import com.shilov.spring_reservation.entities.User;
 
 public interface AuthService {
 
