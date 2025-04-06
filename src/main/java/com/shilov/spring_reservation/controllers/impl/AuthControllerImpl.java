@@ -1,16 +1,18 @@
 package com.shilov.spring_reservation.controllers.impl;
 
-import com.shilov.spring_reservation.common.enums.ResponseStatus;
 import com.shilov.spring_reservation.common.enums.UserRole;
 import com.shilov.spring_reservation.common.exceptions.ServiceException;
-import com.shilov.spring_reservation.controllers.AuthController;
-import com.shilov.spring_reservation.controllers.responses.Response;
+import com.shilov.spring_reservation.models.LoginInput;
 import com.shilov.spring_reservation.services.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
-public class AuthControllerImpl implements AuthController {
+public class AuthControllerImpl {
 
     private final AuthService authService;
 
@@ -19,39 +21,38 @@ public class AuthControllerImpl implements AuthController {
         this.authService = authService;
     }
 
-    public Response loginAsAdmin(String login) {
-        String successMessage = "Admin login operation success";
-        Response response;
-        try {
-            authService.signIn(login, UserRole.ADMIN);
-            response = new Response(ResponseStatus.SUCCESS, successMessage);
-        } catch (ServiceException e) {
-            response = new Response(ResponseStatus.FAILURE, e.getMessage());
-        }
-        return response;
+    @GetMapping("/login")
+    public String showLoginForm(@RequestParam("role") String userRole,  Model model) {
+        model.addAttribute(new LoginInput());
+        model.addAttribute("role", userRole);
+        return "login_form";
     }
 
-    public Response loginAsCustomer(String login) {
-        String successMessage = "Customer login operation success";
-        Response response;
-        try {
-            authService.signIn(login, UserRole.CUSTOMER);
-            response = new Response(ResponseStatus.SUCCESS, successMessage);
-        } catch (ServiceException e) {
-            response = new Response(ResponseStatus.FAILURE, e.getMessage());
+    @PostMapping("/login")
+    public String doLogin(@RequestParam("role") String userRole,
+                          @Valid @ModelAttribute("loginInput") LoginInput loginInput,
+                          BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("role", userRole);
+            return "login_form";
         }
-        return response;
+        try {
+            UserRole role = UserRole.valueOf(userRole.trim().toUpperCase());
+            authService.signIn(loginInput.getLogin(), role);
+            return switch (role) {
+                case ADMIN -> "redirect:/admin/menu";
+                case CUSTOMER -> "redirect:/customer/menu";
+            };
+        } catch (ServiceException | IllegalArgumentException e) {
+            model.addAttribute("error", "Error during login process");
+            model.addAttribute("role", userRole);
+            return "login_form";
+        }
     }
 
-    public Response logout() {
-        String successMessage = "Logout operation success";
-        Response response;
-        try {
+    @PostMapping("logout")
+    public String logout() throws ServiceException {
             authService.signOut();
-            response = new Response(ResponseStatus.SUCCESS, successMessage);
-        } catch (ServiceException e) {
-            response = new Response(ResponseStatus.FAILURE, e.getMessage());
-        }
-        return response;
+        return "redirect:/";
     }
 }

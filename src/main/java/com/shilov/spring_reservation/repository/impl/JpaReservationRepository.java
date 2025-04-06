@@ -1,17 +1,14 @@
 package com.shilov.spring_reservation.repository.impl;
 
 import com.shilov.spring_reservation.common.exceptions.RepositoryException;
-import com.shilov.spring_reservation.models.Reservation;
-import com.shilov.spring_reservation.models.ReservationDateTime;
-import com.shilov.spring_reservation.models.User;
+import com.shilov.spring_reservation.entities.Reservation;
+import com.shilov.spring_reservation.entities.ReservationDateTime;
+import com.shilov.spring_reservation.entities.User;
 import com.shilov.spring_reservation.repository.ReservationRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.security.cert.Extension;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,14 +36,12 @@ public class JpaReservationRepository implements ReservationRepository {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Long addReservation(Reservation reservation) throws RepositoryException {
+    public Long addReservation(Reservation reservation) {
             em.persist(reservation);
             return reservation.getId();
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateReservation(Long id, Reservation newData) throws RepositoryException {
         Reservation reservation = em.find(Reservation.class, id);
         if (reservation != null) {

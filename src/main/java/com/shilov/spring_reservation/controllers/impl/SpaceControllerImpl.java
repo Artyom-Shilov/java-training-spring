@@ -1,23 +1,24 @@
 package com.shilov.spring_reservation.controllers.impl;
 
-import com.shilov.spring_reservation.common.enums.ResponseStatus;
 import com.shilov.spring_reservation.common.enums.SpaceType;
-import com.shilov.spring_reservation.common.exceptions.ReservationDateTimeFormatException;
 import com.shilov.spring_reservation.common.exceptions.ServiceException;
-import com.shilov.spring_reservation.controllers.SpaceController;
-import com.shilov.spring_reservation.controllers.requests.ReservationDateTimeInput;
-import com.shilov.spring_reservation.controllers.requests.UpdateSpaceRequest;
-import com.shilov.spring_reservation.controllers.responses.Response;
-import com.shilov.spring_reservation.models.ReservationDateTime;
-import com.shilov.spring_reservation.models.Space;
+import com.shilov.spring_reservation.entities.ReservationDateTime;
+import com.shilov.spring_reservation.entities.Space;
+import com.shilov.spring_reservation.models.IdInput;
+import com.shilov.spring_reservation.models.ReservationDateTimeInput;
+import com.shilov.spring_reservation.models.SpaceInput;
 import com.shilov.spring_reservation.services.SpaceService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Controller
-public class SpaceControllerImpl implements SpaceController {
+public class SpaceControllerImpl {
 
     private final SpaceService spaceService;
 
@@ -26,67 +27,92 @@ public class SpaceControllerImpl implements SpaceController {
         this.spaceService = spaceService;
     }
 
-    public Response createSpace(String spaceType, String hourlyRate) {
-        Response response;
-        String successMessage = "Space was successfully created";
+    @GetMapping("space/creation")
+    public String showSpaceCreationForm(Model model) {
+        model.addAttribute(new SpaceInput());
+        return "space_creation_form";
+    }
+
+    @PostMapping("space")
+    public String createSpace(@Valid @ModelAttribute SpaceInput spaceInput,
+                              BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            return "space_creation_form";
+        }
         try {
-            spaceService.addNewSpace(new Space(
-                    SpaceType.valueOf(spaceType),
-                    Integer.parseInt(hourlyRate)
-            ));
-            response = new Response(ResponseStatus.SUCCESS, successMessage);
+            SpaceType spaceType = SpaceType.valueOf(spaceInput.getType().trim().toUpperCase());
+            Long id = spaceService.addNewSpace(new Space(
+                    spaceType,
+                    spaceInput.getPrice()));
+            model.addAttribute("successMessage", "Space has been created with id : " + id);
         } catch (ServiceException | IllegalArgumentException e) {
-            response = new Response(ResponseStatus.FAILURE, e.getMessage());
+            model.addAttribute("error", "Error during space creation process");
         }
-        return response;
+        return "space_creation_form";
     }
 
-    public Response deleteSpace(String id) {
-        Response response;
-        String successMessage = "Space was successfully deleted";
+    @GetMapping("space/removal")
+    public String showSpaceRemovalForm(Model model) {
+        model.addAttribute(new IdInput());
+        return "space_removal_form";
+    }
+
+    @PostMapping("space/removal")
+    public String deleteSpace(@Valid @ModelAttribute IdInput idInput,
+                              BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            return "space_removal_form";
+        }
         try {
-            spaceService.deleteSpace(id);
-            response = new Response(ResponseStatus.SUCCESS, successMessage);
-        } catch (ServiceException e) {
-            response = new Response(ResponseStatus.FAILURE, e.getMessage());
+            spaceService.deleteSpace(idInput.getId());
+            model.addAttribute("successMessage", "Space has been deleted");
+        } catch (Exception e) {
+            model.addAttribute("error", "Error during space removal process");
         }
-        return response;
+        return "space_removal_form";
     }
 
-    public Response updateSpace (UpdateSpaceRequest request) {
-        Response response;
-        String successMessage = "Space was successfully updated";
+    @PostMapping
+    public String updateSpace(@Valid @ModelAttribute SpaceInput spaceInput,
+                              @Valid @ModelAttribute IdInput idInput,
+                              BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            return "update_space_form";
+        }
         try {
             Space updatedData = new Space(
-                    SpaceType.valueOf(request.getUpdatedSpaceType()),
-                    Integer.parseInt(request.getUpdatedHourlyRate())
-            );
-            spaceService.updateSpace(request.getSpaceId(),updatedData);
-            response = new Response(ResponseStatus.SUCCESS, successMessage);
+                    SpaceType.valueOf(spaceInput.getType().trim().toUpperCase()),
+                    spaceInput.getPrice());
+            spaceService.updateSpace(idInput.getId(), updatedData);
+            model.addAttribute("successMessage", "Space has been updated");
         } catch (ServiceException | IllegalArgumentException e) {
-            response = new Response(ResponseStatus.FAILURE, e.getMessage());
+            model.addAttribute("error", "Error during space update process");
         }
-        return response;
+        return "update_space_form";
     }
 
-    public Response getAvailableSpaces(ReservationDateTimeInput request) {
-        List<Space> availableSpaces;
-        StringBuilder output = new StringBuilder();
-        Response response;
-        try {
-            availableSpaces = spaceService.getAvailableForReservationSpaces(
-                    new ReservationDateTime(request.getDate(), request.getStartTime(), request.getEndTime()));
-            for (int i = 0; i < availableSpaces.size(); i++) {
-                output.append(i + 1).append(": ").append(availableSpaces.get(i)).append("\n");
-            }
-            if (output.isEmpty()) {
-                String noSpacesMessage = "No available spaces found";
-                output.append(noSpacesMessage);
-            }
-            response = new Response(ResponseStatus.SUCCESS, output.toString());
-        } catch (ServiceException | ReservationDateTimeFormatException e) {
-            response = new Response(ResponseStatus.FAILURE, e.getMessage());
+    @GetMapping("space/available/selection")
+    public String showAvailableSpacesForm(Model model) {
+        model.addAttribute(new ReservationDateTimeInput());
+        return "space_available_form";
+    }
+
+    @GetMapping("space/available")
+    public String getAvailableSpaces(@Valid @ModelAttribute ReservationDateTimeInput dateTimeInput,
+                                     BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            return "space_available_form";
         }
-        return response;
+        try {
+            List<Space> availableSpaces = spaceService.getAvailableForReservationSpaces(
+                    new ReservationDateTime(dateTimeInput.getDate(),
+                            dateTimeInput.getStartTime(),
+                            dateTimeInput.getEndTime()));
+            model.addAttribute("spaces", availableSpaces);
+            return "spaces_list";
+        } catch (ServiceException e) {
+            model.addAttribute("error", "Error during available space selection process");
+            return "space_available_form";
+        }
     }
 }

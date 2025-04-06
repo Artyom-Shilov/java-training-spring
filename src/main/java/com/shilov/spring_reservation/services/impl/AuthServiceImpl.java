@@ -3,12 +3,13 @@ package com.shilov.spring_reservation.services.impl;
 import com.shilov.spring_reservation.common.enums.UserRole;
 import com.shilov.spring_reservation.common.exceptions.RepositoryException;
 import com.shilov.spring_reservation.common.exceptions.ServiceException;
-import com.shilov.spring_reservation.models.User;
+import com.shilov.spring_reservation.entities.User;
 import com.shilov.spring_reservation.repository.CurrentUserRepository;
 import com.shilov.spring_reservation.repository.GlobalUserRepository;
 import com.shilov.spring_reservation.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -26,6 +27,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void signIn(String login, UserRole role) throws ServiceException {
         try {
             User user;

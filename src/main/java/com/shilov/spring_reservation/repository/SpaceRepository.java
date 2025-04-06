@@ -1,7 +1,7 @@
 package com.shilov.spring_reservation.repository;
 
 import com.shilov.spring_reservation.common.exceptions.RepositoryException;
-import com.shilov.spring_reservation.models.Space;
+import com.shilov.spring_reservation.entities.Space;
 
 import java.util.List;
 import java.util.Optional;

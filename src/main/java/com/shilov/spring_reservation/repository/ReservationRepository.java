@@ -1,9 +1,9 @@
 package com.shilov.spring_reservation.repository;
 
 import com.shilov.spring_reservation.common.exceptions.RepositoryException;
-import com.shilov.spring_reservation.models.Reservation;
-import com.shilov.spring_reservation.models.ReservationDateTime;
-import com.shilov.spring_reservation.models.User;
+import com.shilov.spring_reservation.entities.Reservation;
+import com.shilov.spring_reservation.entities.ReservationDateTime;
+import com.shilov.spring_reservation.entities.User;
 
 import java.util.List;
 import java.util.Optional;
