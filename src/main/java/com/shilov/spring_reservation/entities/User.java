@@ -1,6 +1,7 @@
 package com.shilov.spring_reservation.entities;
 
 import com.shilov.spring_reservation.common.enums.UserRole;
+import com.shilov.spring_reservation.models.UserModel;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -32,6 +33,12 @@ public class User implements Serializable {
         this.id = id;
         this.login = login;
         this.userRole = userRole;
+    }
+
+    public User(UserModel userModel) {
+        this.id = userModel.id();
+        this.login = userModel.login();
+        this.userRole = UserRole.valueOf(userModel.role().toUpperCase().trim());
     }
 
     public String getLogin() {
@@ -86,5 +93,9 @@ public class User implements Serializable {
                 ", login='" + login + '\'' +
                 ", userRole=" + userRole +
                 '}';
+    }
+
+    public UserModel toUserModel() {
+        return new UserModel(this.id, this.login, this.userRole.name());
     }
 }

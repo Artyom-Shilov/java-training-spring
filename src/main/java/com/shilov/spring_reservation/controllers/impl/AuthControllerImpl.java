@@ -2,8 +2,6 @@ package com.shilov.spring_reservation.controllers.impl;
 
 import com.shilov.spring_reservation.common.enums.UserRole;
 import com.shilov.spring_reservation.common.exceptions.ServiceException;
-import com.shilov.spring_reservation.models.LoginInput;
-import com.shilov.spring_reservation.services.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

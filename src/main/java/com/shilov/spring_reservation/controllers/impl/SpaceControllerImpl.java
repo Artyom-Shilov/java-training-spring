@@ -4,9 +4,7 @@ import com.shilov.spring_reservation.common.enums.SpaceType;
 import com.shilov.spring_reservation.common.exceptions.ServiceException;
 import com.shilov.spring_reservation.entities.ReservationDateTime;
 import com.shilov.spring_reservation.entities.Space;
-import com.shilov.spring_reservation.models.IdInput;
-import com.shilov.spring_reservation.models.ReservationDateTimeInput;
-import com.shilov.spring_reservation.models.SpaceInput;
+import com.shilov.spring_reservation.models.SpaceModel;
 import com.shilov.spring_reservation.services.SpaceService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,21 +27,21 @@ public class SpaceControllerImpl {
 
     @GetMapping("space/creation")
     public String showSpaceCreationForm(Model model) {
-        model.addAttribute(new SpaceInput());
+        model.addAttribute(new SpaceModel());
         return "space_creation_form";
     }
 
     @PostMapping("space")
-    public String createSpace(@Valid @ModelAttribute SpaceInput spaceInput,
+    public String createSpace(@Valid @ModelAttribute SpaceModel spaceModel,
                               BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             return "space_creation_form";
         }
         try {
-            SpaceType spaceType = SpaceType.valueOf(spaceInput.getType().trim().toUpperCase());
+            SpaceType spaceType = SpaceType.valueOf(spaceModel.getType().trim().toUpperCase());
             Long id = spaceService.addNewSpace(new Space(
                     spaceType,
-                    spaceInput.getPrice()));
+                    spaceModel.getPrice()));
             model.addAttribute("successMessage", "Space has been created with id : " + id);
         } catch (ServiceException | IllegalArgumentException e) {
             model.addAttribute("error", "Error during space creation process");
@@ -73,7 +71,7 @@ public class SpaceControllerImpl {
     }
 
     @PostMapping
-    public String updateSpace(@Valid @ModelAttribute SpaceInput spaceInput,
+    public String updateSpace(@Valid @ModelAttribute SpaceModel spaceModel,
                               @Valid @ModelAttribute IdInput idInput,
                               BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
@@ -81,8 +79,8 @@ public class SpaceControllerImpl {
         }
         try {
             Space updatedData = new Space(
-                    SpaceType.valueOf(spaceInput.getType().trim().toUpperCase()),
-                    spaceInput.getPrice());
+                    SpaceType.valueOf(spaceModel.getType().trim().toUpperCase()),
+                    spaceModel.getPrice());
             spaceService.updateSpace(idInput.getId(), updatedData);
             model.addAttribute("successMessage", "Space has been updated");
         } catch (ServiceException | IllegalArgumentException e) {
