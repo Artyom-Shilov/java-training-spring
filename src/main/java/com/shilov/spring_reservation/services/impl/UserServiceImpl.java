@@ -1,6 +1,7 @@
 package com.shilov.spring_reservation.services.impl;
 
 import com.shilov.spring_reservation.common.exceptions.DataNotFoundException;
+import com.shilov.spring_reservation.common.exceptions.EntityAlreadyExistsException;
 import com.shilov.spring_reservation.entities.User;
 import com.shilov.spring_reservation.models.UserModel;
 import com.shilov.spring_reservation.repository.UserRepository;
@@ -21,7 +22,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Cacheable(value = "users", key = "#id")
+    @Cacheable(value = "users", key = "#p0")
     public UserModel getUser(Long id) throws DataNotFoundException {
         return userRepository.findUserById(id)
                 .orElseThrow(() -> new DataNotFoundException(User.class, id))
@@ -29,8 +30,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
-    public Long addUser(UserModel userModel) {
+    @Transactional(rollbackFor = Exception.class)
+    public Long addUser(UserModel userModel) throws EntityAlreadyExistsException {
+        if (userRepository.findUserByLogin(userModel.login()).isPresent()) {
+            throw new EntityAlreadyExistsException("User with login " + userModel.login() + " already exists");
+        }
         return userRepository.save(new User(userModel)).getId();
     }
 }

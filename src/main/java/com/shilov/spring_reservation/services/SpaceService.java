@@ -1,7 +1,7 @@
 package com.shilov.spring_reservation.services;
 
 import com.shilov.spring_reservation.common.exceptions.ServiceException;
-import com.shilov.spring_reservation.entities.ReservationDateTime;
+import com.shilov.spring_reservation.models.ReservationDateTimeModel;
 import com.shilov.spring_reservation.models.SpaceModel;
 
 import java.util.List;
@@ -12,11 +12,11 @@ public interface SpaceService {
 
     void deleteSpace(Long id) throws ServiceException;
 
-    void updateSpace(Long id, SpaceModel update) throws ServiceException;
+    SpaceModel updateSpace(Long id, SpaceModel update) throws ServiceException;
 
-    List<SpaceModel> getAvailableForReservationSpaces(ReservationDateTime reservationDateTime) throws ServiceException;
+    List<SpaceModel> getAvailableForReservationSpaces(ReservationDateTimeModel reservationDateTime) throws ServiceException;
 
     SpaceModel getSpaceById(Long id) throws ServiceException;
 
-    boolean checkSpaceReservationAvailability(Long spaceId, ReservationDateTime reservationDateTime) throws ServiceException;
+    void checkSpaceReservationAvailability(Long spaceId, ReservationDateTimeModel reservationDateTime) throws ServiceException;
 }

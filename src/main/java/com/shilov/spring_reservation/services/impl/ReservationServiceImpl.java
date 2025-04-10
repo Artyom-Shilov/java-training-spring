@@ -2,7 +2,7 @@ package com.shilov.spring_reservation.services.impl;
 
 import com.shilov.spring_reservation.common.enums.ReservationStatus;
 import com.shilov.spring_reservation.common.enums.UserRole;
-import com.shilov.spring_reservation.common.exceptions.AuthorizationException;
+import com.shilov.spring_reservation.common.exceptions.ReservationConflictException;
 import com.shilov.spring_reservation.common.exceptions.DataNotFoundException;
 import com.shilov.spring_reservation.common.exceptions.ServiceException;
 import com.shilov.spring_reservation.entities.Reservation;
@@ -43,14 +43,14 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CachePut(value = "reservations", key = "#reservationId")
-    public void cancelReservation(Long reservationId, Long userId) throws ServiceException {
+    @CachePut(value = "reservations", key = "#p0")
+    public void cancelReservation(Long reservationId, String userLogin) throws ServiceException {
         Reservation reservation = reservationRepository
                 .findReservationById(reservationId)
                 .orElseThrow(() -> new DataNotFoundException(Reservation.class, reservationId));
         User user = userRepository
-                .findUserById(userId)
-                .orElseThrow(() -> new DataNotFoundException(User.class, userId));
+                .findUserByLogin(userLogin)
+                .orElseThrow(() -> new DataNotFoundException("User with login " + userLogin + " not found"));
         validateUserForReservationCancel(user, reservation);
         reservation.setStatus(ReservationStatus.CANCELLED);
         reservationRepository.save(reservation);
@@ -60,7 +60,7 @@ public class ReservationServiceImpl implements ReservationService {
         if (user.getRole() == UserRole.ADMIN || user.equals(reservation.getCustomer())) {
             return;
         }
-        throw new AuthorizationException("User does have rights to cancel the reservation");
+        throw new ReservationConflictException("User does have rights to cancel the reservation");
     }
 
     @Override
@@ -108,7 +108,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    @Cacheable(value = "spaces", key = "#reservationId")
+    @Cacheable(value = "spaces", key = "#p0")
     public ReservationModel getReservationById(Long reservationId) throws DataNotFoundException {
         return reservationRepository.findReservationById(reservationId)
                 .orElseThrow(() -> new DataNotFoundException(Reservation.class, reservationId))

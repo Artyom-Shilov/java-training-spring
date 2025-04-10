@@ -2,9 +2,10 @@ package com.shilov.spring_reservation.services.impl;
 
 import com.shilov.spring_reservation.common.enums.ReservationStatus;
 import com.shilov.spring_reservation.common.exceptions.DataNotFoundException;
+import com.shilov.spring_reservation.common.exceptions.ReservationConflictException;
 import com.shilov.spring_reservation.entities.Reservation;
-import com.shilov.spring_reservation.entities.ReservationDateTime;
 import com.shilov.spring_reservation.entities.Space;
+import com.shilov.spring_reservation.models.ReservationDateTimeModel;
 import com.shilov.spring_reservation.models.SpaceModel;
 import com.shilov.spring_reservation.repository.ReservationRepository;
 import com.shilov.spring_reservation.repository.SpaceRepository;
@@ -38,7 +39,7 @@ public class SpaceServiceImpl implements SpaceService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(value = "spaces", key = "#id")
+    @CacheEvict(value = "spaces", key = "#p0")
     public void deleteSpace(Long id) throws DataNotFoundException {
         if (spaceRepository.findSpaceById(id).isEmpty()) {
             throw new DataNotFoundException(Space.class, id);
@@ -48,23 +49,23 @@ public class SpaceServiceImpl implements SpaceService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CachePut(value = "spaces", key = "#id")
-    public void updateSpace(Long id, SpaceModel spaceModel) throws DataNotFoundException {
+    @CachePut(value = "spaces", key = "#p0")
+    public SpaceModel updateSpace(Long id, SpaceModel spaceModel) throws DataNotFoundException {
         if (spaceRepository.findSpaceById(id).isEmpty()) {
             throw new DataNotFoundException(Space.class, id);
         }
         Space space = new Space(spaceModel);
         space.setId(id);
-        spaceRepository.save(space);
+        return spaceRepository.save(space).toSpaceModel();
     }
 
     @Override
-    public List<SpaceModel> getAvailableForReservationSpaces(ReservationDateTime reservationDateTime) {
+    public List<SpaceModel> getAvailableForReservationSpaces(ReservationDateTimeModel reservationDateTime) {
         List<Space> spacesWithDateTimeIntersection = reservationRepository
                 .findReservationsIntersectedWithTimeRange(
-                        reservationDateTime.getDate(),
-                        reservationDateTime.getStartTime(),
-                        reservationDateTime.getStartTime())
+                        reservationDateTime.date(),
+                        reservationDateTime.startTime(),
+                        reservationDateTime.endTime())
                 .stream()
                 .filter(r -> r.getStatus() == ReservationStatus.ACTIVE)
                 .map(Reservation::getSpace).toList();
@@ -74,7 +75,7 @@ public class SpaceServiceImpl implements SpaceService {
     }
 
     @Override
-    @Cacheable(value = "spaces", key = "#id")
+    @Cacheable(value = "spaces", key = "#p0")
     public SpaceModel getSpaceById(Long id) throws DataNotFoundException {
         return spaceRepository.findSpaceById(id)
                 .orElseThrow(() -> new DataNotFoundException(Space.class, id))
@@ -82,10 +83,12 @@ public class SpaceServiceImpl implements SpaceService {
     }
 
     @Override
-    public boolean checkSpaceReservationAvailability(Long spaceId, ReservationDateTime reservationDateTime) {
+    public void checkSpaceReservationAvailability(Long spaceId, ReservationDateTimeModel reservationDateTime) throws ReservationConflictException {
         var optional = getAvailableForReservationSpaces(reservationDateTime)
                 .stream().filter(s -> s.id().equals(spaceId))
                 .findAny();
-        return optional.isPresent();
+        if (optional.isEmpty()) {
+            throw new ReservationConflictException("Space with id " + spaceId + " is not available for reservation");
+        }
     }
 }
