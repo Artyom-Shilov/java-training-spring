@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ReservationService {
 
-    void cancelReservation(Long reservationId, String userLogin) throws ServiceException;
+    ReservationModel updateReservation(Long reservationId,  ReservationModel update) throws ServiceException;
 
     Long makeReservation(ReservationModel reservationModel) throws ServiceException;
 

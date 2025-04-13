@@ -44,23 +44,19 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @CachePut(value = "reservations", key = "#p0")
-    public void cancelReservation(Long reservationId, String userLogin) throws ServiceException {
-        Reservation reservation = reservationRepository
-                .findReservationById(reservationId)
-                .orElseThrow(() -> new DataNotFoundException(Reservation.class, reservationId));
-        User user = userRepository
-                .findUserByLogin(userLogin)
-                .orElseThrow(() -> new DataNotFoundException("User with login " + userLogin + " not found"));
-        validateUserForReservationCancel(user, reservation);
-        reservation.setStatus(ReservationStatus.CANCELLED);
-        reservationRepository.save(reservation);
-    }
-
-    public void validateUserForReservationCancel(User user, Reservation reservation) throws ServiceException {
-        if (user.getRole() == UserRole.ADMIN || user.equals(reservation.getCustomer())) {
-            return;
+    public ReservationModel updateReservation(Long reservationId, ReservationModel update) throws ServiceException {
+        if (reservationRepository.findById(reservationId).isEmpty()) {
+            throw new DataNotFoundException("Reservation with id " + reservationId + " not found");
         }
-        throw new ReservationConflictException("User does have rights to cancel the reservation");
+        Reservation reservation = new Reservation();
+        reservation.setStatus(ReservationStatus.valueOf(update.status()));
+        reservation.setCustomer(userRepository.findById(update.customerId())
+                .orElseThrow(() -> new DataNotFoundException("Customer with id " + update.customerId() + " not found")));
+        reservation.setSpace(spaceRepository.findById(update.spaceId())
+                .orElseThrow(() -> new DataNotFoundException("Space with id " + update.spaceId() + " not found")));
+        reservation.setReservationDateTime(new ReservationDateTime(update.date(), update.startTime(), update.endTime()));
+        reservation.setId(reservationId);
+        return reservationRepository.save(reservation).toReservationModel();
     }
 
     @Override

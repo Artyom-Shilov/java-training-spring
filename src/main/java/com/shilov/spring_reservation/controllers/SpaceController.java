@@ -21,23 +21,23 @@ public class SpaceController {
         this.spaceService = spaceService;
     }
 
-    @PostMapping("/space")
+    @PostMapping("/spaces")
     public ResponseEntity<Long> createSpace(@Valid @RequestBody SpaceModel spaceModel) throws ServiceException {
         return ResponseEntity.ok(spaceService.addNewSpace(spaceModel));
     }
 
-    @DeleteMapping("/space/{id}")
+    @DeleteMapping("/spaces/{id}")
     public ResponseEntity<String> deleteSpace(@PathVariable("id") Long id) throws ServiceException {
         spaceService.deleteSpace(id);
         return ResponseEntity.ok("space with id " + id + " has been deleted");
     }
 
-    @PostMapping("space/{id}")
+    @PostMapping("/spaces/{id}")
     public ResponseEntity<SpaceModel> updateSpace(@PathVariable("id") Long id, @RequestBody @Valid SpaceModel spaceModel) throws ServiceException {
         return ResponseEntity.ok(spaceService.updateSpace(id, spaceModel));
     }
 
-    @GetMapping("space/available")
+    @GetMapping("/spaces/available")
     public ResponseEntity<List<SpaceModel>> getAvailableSpaces(@RequestBody @Valid ReservationDateTimeModel reservationDateTime) throws ServiceException {
        return ResponseEntity.ok(spaceService.getAvailableForReservationSpaces(reservationDateTime));
     }
