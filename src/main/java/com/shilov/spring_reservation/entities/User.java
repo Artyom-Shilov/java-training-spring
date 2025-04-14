@@ -3,13 +3,18 @@ package com.shilov.spring_reservation.entities;
 import com.shilov.spring_reservation.common.enums.UserRole;
 import com.shilov.spring_reservation.models.UserModel;
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
 @Table(name = "users")
-public class User implements Serializable {
+public class User implements Serializable, UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -18,27 +23,26 @@ public class User implements Serializable {
     @Column(unique = true)
     private String login;
 
+    @Column(nullable = false)
+    private String password;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private UserRole userRole;
 
     public User() {}
 
-    public User(String login, UserRole userRole) {
+    public User(String login, UserRole userRole, String password) {
         this.login = login;
         this.userRole = userRole;
+        this.password = password;
     }
 
-    public User(Long id, String login, UserRole userRole) {
+    public User(Long id, String login, UserRole userRole, String password) {
         this.id = id;
         this.login = login;
         this.userRole = userRole;
-    }
-
-    public User(UserModel userModel) {
-        this.id = userModel.id();
-        this.login = userModel.login();
-        this.userRole = UserRole.valueOf(userModel.role().toUpperCase().trim());
+        this.password = password;
     }
 
     public String getLogin() {
@@ -65,12 +69,18 @@ public class User implements Serializable {
         this.id = id;
     }
 
-    public UserRole getUserRole() {
-        return userRole;
+    @Override
+    public String getPassword() {
+        return password;
     }
 
-    public void setUserRole(UserRole userRole) {
-        this.userRole = userRole;
+    @Override
+    public String getUsername() {
+        return getLogin();
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     @Override
@@ -78,12 +88,12 @@ public class User implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(login, user.login) && userRole == user.userRole;
+        return Objects.equals(id, user.id) && Objects.equals(login, user.login) && Objects.equals(password, user.password) && userRole == user.userRole;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, login, userRole);
+        return Objects.hash(id, login, password, userRole);
     }
 
     @Override
@@ -91,8 +101,14 @@ public class User implements Serializable {
         return "User{" +
                 "id=" + id +
                 ", login='" + login + '\'' +
+                ", password='" + password + '\'' +
                 ", userRole=" + userRole +
                 '}';
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(userRole.name()));
     }
 
     public UserModel toUserModel() {

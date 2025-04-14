@@ -119,7 +119,8 @@ public class Reservation implements Serializable {
                 this.customer.getId(),
                 this.reservationDateTime.getDate(),
                 this.reservationDateTime.getStartTime(),
-                this.reservationDateTime.getEndTime()
+                this.reservationDateTime.getEndTime(),
+                this.status.name()
         );
     }
 }

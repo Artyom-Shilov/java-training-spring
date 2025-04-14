@@ -32,7 +32,7 @@ public class SpaceController {
         return ResponseEntity.ok("space with id " + id + " has been deleted");
     }
 
-    @PostMapping("/spaces/{id}")
+    @PutMapping("/spaces/{id}")
     public ResponseEntity<SpaceModel> updateSpace(@PathVariable("id") Long id, @RequestBody @Valid SpaceModel spaceModel) throws ServiceException {
         return ResponseEntity.ok(spaceService.updateSpace(id, spaceModel));
     }

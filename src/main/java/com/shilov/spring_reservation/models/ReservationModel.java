@@ -12,6 +12,6 @@ public record ReservationModel(
         @NotNull Long spaceId,
         @NotNull Long customerId,
         @NotNull @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
-        @Pattern(regexp = "\\b(ACTIVE|INACTIVE|CANCELLED)\\b", message = "Unknown reservation status") String status,
         @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime,
-        @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime endTime) {}
+        @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime endTime,
+        @Pattern(regexp = "\\b(ACTIVE|INACTIVE|CANCELLED)\\b", message = "Unknown reservation status") String status) {}

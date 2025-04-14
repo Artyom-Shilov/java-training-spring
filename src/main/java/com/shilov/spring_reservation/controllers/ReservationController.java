@@ -36,8 +36,8 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.makeReservation(reservationModel));
     }
 
-    @PostMapping("/reservations/{id}")
-    public ResponseEntity<String> cancelReservation(@PathVariable("id") Long id, @RequestBody @Valid  ReservationModel reservationModel) throws ServiceException {
+    @PutMapping("/reservations/{id}")
+    public ResponseEntity<String> updateReservation(@PathVariable("id") Long id, @RequestBody @Valid  ReservationModel reservationModel) throws ServiceException {
         reservationService.updateReservation(id, reservationModel);
         return ResponseEntity.ok("Reservation with id : " + id + " has been updated");
     }
