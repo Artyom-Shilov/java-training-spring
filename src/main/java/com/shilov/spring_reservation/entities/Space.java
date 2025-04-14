@@ -1,6 +1,7 @@
 package com.shilov.spring_reservation.entities;
 
 import com.shilov.spring_reservation.common.enums.SpaceType;
+import com.shilov.spring_reservation.models.SpaceModel;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -22,6 +23,12 @@ public class Space implements Serializable {
 
     public Space() {
         type = SpaceType.OPEN;
+    }
+
+    public Space(SpaceModel spaceModel) {
+        this.id = spaceModel.id();
+        this.hourlyPrice = spaceModel.price();
+        this.type = SpaceType.valueOf(spaceModel.type().toUpperCase().trim());
     }
 
     public Space(SpaceType type, int hourlyPrice) {
@@ -79,5 +86,9 @@ public class Space implements Serializable {
                 ", type=" + type +
                 ", hourlyPrice=" + hourlyPrice +
                 '}';
+    }
+
+    public SpaceModel toSpaceModel() {
+        return new SpaceModel(this.id, this.type.name(), this.hourlyPrice);
     }
 }

@@ -1,6 +1,7 @@
 package com.shilov.spring_reservation.entities;
 
 import com.shilov.spring_reservation.common.enums.ReservationStatus;
+import com.shilov.spring_reservation.models.ReservationModel;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -109,5 +110,17 @@ public class Reservation implements Serializable {
                 ", status=" + status +
                 ", reservationDateTime=" + reservationDateTime +
                 '}';
+    }
+
+    public ReservationModel toReservationModel() {
+        return new ReservationModel(
+                this.id,
+                this.space.getId(),
+                this.customer.getId(),
+                this.reservationDateTime.getDate(),
+                this.reservationDateTime.getStartTime(),
+                this.reservationDateTime.getEndTime(),
+                this.status.name()
+        );
     }
 }

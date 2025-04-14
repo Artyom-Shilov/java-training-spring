@@ -1,22 +1,19 @@
 package com.shilov.spring_reservation.services;
 
 import com.shilov.spring_reservation.common.exceptions.ServiceException;
-import com.shilov.spring_reservation.entities.Reservation;
-import com.shilov.spring_reservation.entities.ReservationDateTime;
-import com.shilov.spring_reservation.entities.Space;
-import com.shilov.spring_reservation.entities.User;
+import com.shilov.spring_reservation.models.ReservationModel;
 
 import java.util.List;
 
 public interface ReservationService {
 
-    void cancelReservation(Long reservationId, User user) throws ServiceException;
+    ReservationModel updateReservation(Long reservationId,  ReservationModel update) throws ServiceException;
 
-    Long makeReservation(Space space, User customer, ReservationDateTime reservationDateTime) throws ServiceException;
+    Long makeReservation(ReservationModel reservationModel) throws ServiceException;
 
-    List<Reservation> getAllReservations() throws ServiceException;
+    List<ReservationModel> getAllReservations() throws ServiceException;
 
-    List<Reservation> getUserReservations(User customer) throws ServiceException;
+    List<ReservationModel> getUserReservations(Long customerId) throws ServiceException;
 
-    Reservation getReservationById(Long reservationId) throws ServiceException;
+    ReservationModel getReservationById(Long reservationId) throws ServiceException;
 }

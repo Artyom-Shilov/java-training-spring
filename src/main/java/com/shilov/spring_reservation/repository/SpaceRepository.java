@@ -1,22 +1,13 @@
 package com.shilov.spring_reservation.repository;
 
-import com.shilov.spring_reservation.common.exceptions.RepositoryException;
 import com.shilov.spring_reservation.entities.Space;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
 import java.util.Optional;
 
-public interface SpaceRepository {
+public interface SpaceRepository extends JpaRepository<Space, Long> {
 
-    List<Space> getAllSpaces() throws RepositoryException;
+    Optional<Space> findSpaceById(Long id);
 
-    Optional<Space> getSpaceById(Long id) throws RepositoryException;
-
-    Long addSpace(Space space) throws RepositoryException;
-
-    void deleteSpace(Long id) throws RepositoryException;
-
-    void updateSpace(Long id, Space newData) throws RepositoryException;
-
-    void deleteAllSpaces() throws RepositoryException;
+    void deleteSpaceById(Long id);
 }
