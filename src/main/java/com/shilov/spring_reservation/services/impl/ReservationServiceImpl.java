@@ -1,8 +1,6 @@
 package com.shilov.spring_reservation.services.impl;
 
 import com.shilov.spring_reservation.common.enums.ReservationStatus;
-import com.shilov.spring_reservation.common.enums.UserRole;
-import com.shilov.spring_reservation.common.exceptions.ReservationConflictException;
 import com.shilov.spring_reservation.common.exceptions.DataNotFoundException;
 import com.shilov.spring_reservation.common.exceptions.ServiceException;
 import com.shilov.spring_reservation.entities.Reservation;
