@@ -1,22 +1,26 @@
-FROM openjdk:23-jdk
+FROM maven:3.9.9-eclipse-temurin-23
 
 ARG DB_PASSWORD
 ARG DB_USERNAME
+ARG DB_URL
 ARG JWT_SECRET
 ARG JWT_EXPIRATION
 
 ENV DB_PASSWORD $DB_PASSWORD
 ENV DB_USERNAME $DB_USERNAME
+ENV DB_URL $DB_URL
 ENV JWT_SECRET $JWT_SECRET
 ENV JWT_EXPIRATION $JWT_EXPIRATION
 
 WORKDIR /app
 
-COPY target/reservations-1.0-SNAPSHOT.jar /app/reservations-1.0.jar
+COPY . /app
+
+RUN mvn package
 
 EXPOSE 8081
 
-ENTRYPOINT ["java","-jar","reservations-1.0.jar"]
+ENTRYPOINT ["mvn","spring-boot:run"]
 
 
 

@@ -8,7 +8,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     password: ${DB_PASSWORD}
     username: ${DB_USERNAME}
-    url: jdbc:mysql://localhost:3306/java_training
+    url: ${DB_URL}
   jpa:
     show-sql: true
     hibernate.ddl-auto: update
