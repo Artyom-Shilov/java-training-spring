@@ -8,7 +8,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     password: ${DB_PASSWORD}
     username: ${DB_USERNAME}
-    url: ${DB_URL}
+    url: jdbc:mysql://host.docker.internal:3306/java_training
   jpa:
     show-sql: true
     hibernate.ddl-auto: update
