@@ -48,6 +48,14 @@ public class Reservation implements Serializable {
         this.reservationDateTime = reservationDateTime;
     }
 
+    public Reservation(Builder builder) {
+        this.id = builder.id;
+        this.customer = builder.customer;
+        this.space = builder.space;
+        this.status = builder.status;
+        this.reservationDateTime = builder.reservationDateTime;
+    }
+
     public Long getId() {
         return id;
     }
@@ -122,5 +130,47 @@ public class Reservation implements Serializable {
                 this.reservationDateTime.getEndTime(),
                 this.status.name()
         );
+    }
+
+    public static class Builder {
+
+        private User customer;
+        private Space space;
+        private ReservationStatus status;
+        private ReservationDateTime reservationDateTime;
+        private Long id;
+
+        public Builder setCustomer(User customer) {
+            this.customer = customer;
+            return this;
+        }
+
+        public Builder setSpace(Space space) {
+            this.space = space;
+            return this;
+        }
+
+        public Builder setStatus(ReservationStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder setReservationDateTime(ReservationDateTime reservationDateTime) {
+            this.reservationDateTime = reservationDateTime;
+            return this;
+        }
+
+        public Builder setId(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public Reservation createReservation() {
+            return new Reservation(id, customer, space, status, reservationDateTime);
+        }
+
+        public Reservation build(){
+            return new Reservation(this);
+        }
     }
 }

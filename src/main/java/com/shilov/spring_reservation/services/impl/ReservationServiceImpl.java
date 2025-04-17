@@ -7,7 +7,6 @@ import com.shilov.spring_reservation.entities.Reservation;
 import com.shilov.spring_reservation.entities.ReservationDateTime;
 import com.shilov.spring_reservation.entities.Space;
 import com.shilov.spring_reservation.entities.User;
-import com.shilov.spring_reservation.entities.builders.ReservationBuilder;
 import com.shilov.spring_reservation.models.ReservationModel;
 import com.shilov.spring_reservation.repository.UserRepository;
 import com.shilov.spring_reservation.repository.ReservationRepository;
@@ -27,7 +26,6 @@ public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final SpaceRepository spaceRepository;
-    private final ReservationBuilder reservationBuilder;
 
     @Autowired
     public ReservationServiceImpl(ReservationRepository reservationRepository,
@@ -36,7 +34,6 @@ public class ReservationServiceImpl implements ReservationService {
         this.reservationRepository = reservationRepository;
         this.userRepository = userRepository;
         this.spaceRepository = spaceRepository;
-        reservationBuilder = new ReservationBuilder();
     }
 
     @Override
@@ -66,7 +63,7 @@ public class ReservationServiceImpl implements ReservationService {
         Space space = spaceRepository
                 .findSpaceById(reservationModel.spaceId())
                 .orElseThrow(() -> new DataNotFoundException(Space.class, reservationModel.spaceId()));
-        Reservation newReservation = reservationBuilder
+        Reservation newReservation = new Reservation.Builder()
                 .setSpace(space)
                 .setCustomer(user)
                 .setReservationDateTime(new ReservationDateTime(
